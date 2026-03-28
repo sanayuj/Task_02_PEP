@@ -2,6 +2,7 @@ require("dotenv").config();
 const User=require("../models/userModel")
 const bcrypt=require("bcrypt")
 const jwt = require("jsonwebtoken");
+const maxAge="7d"
 
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -12,8 +13,8 @@ const createToken = (id) => {
 
 module.exports.signup = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    console.log(email, passport, "DDDDAAAAAA");
+    const { name,email, password } = req.body;
+    console.log(name,email, password, "DDDDAAAAAA");
 
     if (!email || !password) {
       return res.status(400).json({
@@ -36,7 +37,9 @@ module.exports.signup = async (req, res) => {
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
 
+
       user = await User.create({
+        name,
         email,
         password: hashedPassword,
       });
