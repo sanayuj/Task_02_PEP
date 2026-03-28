@@ -205,3 +205,38 @@ module.exports.getAllDocuments = async (req, res) => {
     });
   }
 };
+
+
+module.exports.getDocumentById = async (req, res) => {
+  try {
+    const doc = await Document.findById(req.params.id);
+
+    if (!doc) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+
+    res.status(200).json(doc);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports.autoSaveDocument = async (req, res) => {
+  try {
+    const { title, content } = req.body;
+
+    const updatedDoc = await Document.findByIdAndUpdate(
+      req.params.id,
+      { title, content },
+      { new: true }
+    );
+
+    if (!updatedDoc) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+
+    res.status(200).json(updatedDoc);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
