@@ -67,22 +67,31 @@ module.exports.signup = async (req, res) => {
 
 
 module.exports.login = async (req, res, next) => {
-  const { emailId, loginPassword } = req.body;
+  const { email, password } = req.body;
   try {
-    const user = await userModel.findOne({ email: emailId });
-    if(user.blockStatus){
-      return res.json({message:"Admin temporay blocked you!",success:false})
-    }
+    console.log(req.body,"Inside controller!!!!!!");
+    
+    const user = await User.findOne({ email: email });
+   
     if (user) {
-      const passwordMatch = await bcrypt.compare(loginPassword, user.password);
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      console.log(passwordMatch,"$$$$$");
       if (passwordMatch) {
         const token = createToken(user._id);
+         res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, 
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
         return res.status(200).json({
           user,
           message: "Authentication successful",
           success: true,
           token,
         });
+       
+        
       } else {
         return res.json({ message: "Incorrect password", success: false });
       }
@@ -90,6 +99,8 @@ module.exports.login = async (req, res, next) => {
       return res.json({ message: "User not found", success: false });
     }
   } catch (error) {
+    console.log(error);
+    
     return res.json({ message: "Internal server error", success: false });
   }
 };

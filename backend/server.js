@@ -12,20 +12,13 @@ const routes=require("./routes/routes")
 //DB Config
 dbConfig()
 
-app.use(
-  session({
-    secret: "doc-secret",
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      maxAge: 600000
-    }
-  })
-);
-
+app.use(cookieParser());
 app.use(logger('dev'));
 
-app.use(cookieParser());
+
+
+
+
 
 app.use(cors({
   origin: 'http://localhost:5173',
