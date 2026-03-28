@@ -1,5 +1,6 @@
 require("dotenv").config();
 const User=require("../models/userModel")
+const Document=require("../models/documentModel")
 const bcrypt=require("bcrypt")
 const jwt = require("jsonwebtoken");
 const maxAge="7d"
@@ -115,6 +116,92 @@ module.exports.userHeader = async (req, res, next) => {
     return res.json({
       message: "Internal server error in useHeader",
       status: false,
+    });
+  }
+};
+
+
+
+
+module.exports.createDocument = async (req, res) => {
+  try {
+    const userId = req.user.id; 
+
+    const newDoc = await Document.create({
+      title: "Untitled Document",
+      content: "",
+      owner: userId,
+      collaborators: [],
+      activeUsers: [],
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Document created successfully",
+      document: newDoc,
+    });
+  } catch (error) {
+    console.log("Create Document Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create document",
+    });
+  }
+};
+
+
+
+module.exports.updateDocument = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content, title } = req.body;
+
+    const updatedDoc = await Document.findByIdAndUpdate(
+      id,
+      {
+        content,
+        ...(title && { title }),
+        updatedAt: Date.now(),
+      },
+      { new: true }
+    );
+
+    if (!updatedDoc) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Document updated successfully",
+      data: updatedDoc,
+    });
+  } catch (error) {
+    console.log("Update Document Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while updating document",
+    });
+  }
+};
+
+
+module.exports.getAllDocuments = async (req, res) => {
+  try {
+    const docs = await Document.find().sort({ updatedAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "Documents fetched successfully",
+      data: docs,
+    });
+  } catch (error) {
+    console.log("Get All Documents Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching documents",
     });
   }
 };

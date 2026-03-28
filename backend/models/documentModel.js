@@ -1,12 +1,11 @@
 const mongoose=require("mongoose")
-import mongoose from "mongoose";
 
 const docSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
-      trim: true,
+      default: "Untitled Document"
+
     },
     content: {
       type: String,
@@ -35,6 +34,5 @@ const docSchema = new mongoose.Schema(
   }
 );
 
-const Document = mongoose.model("Document", documentSchema);
+module.exports=new mongoose.model("Document", docSchema);
 
-export default Document;
