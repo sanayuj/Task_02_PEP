@@ -27,3 +27,7 @@ export const getDocumentById = (id) => {
 export const deleteDocumentById=(id)=>{
   return userInstance.delete(`/deleteDoc/${id}`)
 }
+
+export const shareDocument = (id, data) => {
+  return userInstance.post(`/sharedoc/${id}`, data);
+};

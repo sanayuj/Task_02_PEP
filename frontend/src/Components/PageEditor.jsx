@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FileText, Share2, ArrowLeft } from "lucide-react";
-import { autoSave, getDocumentById } from "../Services/Api";
-import { socket } from "../socketSetup/SocketConfig"; // ✅ IMPORT SOCKET
+import { autoSave, getDocumentById, shareDocument } from "../Services/Api";
+import { socket } from "../socketSetup/SocketConfig"; 
+import { toast } from "react-toastify";
 
 function PageEditor() {
   const { id } = useParams();
@@ -13,6 +14,9 @@ function PageEditor() {
   const [title, setTitle] = useState("Untitled Document");
   const [loading, setLoading] = useState(true);
 
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [shareEmail, setShareEmail] = useState("");
+  const [shareRole, setShareRole] = useState("viewer");
 
   useEffect(() => {
     const fetchDoc = async () => {
@@ -32,6 +36,25 @@ function PageEditor() {
   }, [id]);
 
 
+  const handleShare = async () => {
+  try {
+    const res = await shareDocument(id, {
+      email: shareEmail,
+      role: shareRole,
+    });
+
+    console.log(res.data);
+    if(res.data.success){
+      toast.success(res.data.message)
+      setIsShareOpen(false)
+    }else{
+    toast.error(res.data.message)
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
   useEffect(() => {
     if (!id) return;
 
@@ -49,7 +72,6 @@ function PageEditor() {
     };
   }, [id]);
 
-
   const handleChange = (e) => {
     const value = e.target.value;
 
@@ -61,6 +83,7 @@ function PageEditor() {
     });
   };
 
+  
 
   useEffect(() => {
     if (!id || loading) return;
@@ -80,9 +103,6 @@ function PageEditor() {
     return () => clearTimeout(timeout);
   }, [title, content, id, loading]);
 
-  // ==============================
-  // 🎨 UI
-  // ==============================
   return (
     <div className="min-h-screen bg-[#f1f3f4]">
       {/* Navbar */}
@@ -111,8 +131,9 @@ function PageEditor() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full flex items-center gap-2">
+          <button onClick={() => setIsShareOpen(true)}  className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full flex items-center gap-2">
             <Share2 size={16} />
+
             Share
           </button>
 
@@ -128,7 +149,9 @@ function PageEditor() {
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex gap-4 text-sm text-gray-700">
         <button className="hover:bg-gray-100 px-3 py-1 rounded">Bold</button>
         <button className="hover:bg-gray-100 px-3 py-1 rounded">Italic</button>
-        <button className="hover:bg-gray-100 px-3 py-1 rounded">Underline</button>
+        <button className="hover:bg-gray-100 px-3 py-1 rounded">
+          Underline
+        </button>
         <button className="hover:bg-gray-100 px-3 py-1 rounded">Undo</button>
         <button className="hover:bg-gray-100 px-3 py-1 rounded">Redo</button>
       </div>
@@ -149,6 +172,60 @@ function PageEditor() {
       <div className="text-center text-sm text-gray-500 pb-6">
         Document ID: <span className="font-medium">{id}</span>
       </div>
+
+      {isShareOpen && (
+  <div className="fixed inset-0 backdrop-blur-sm bg-white/20 flex items-center justify-center z-50">
+    <div className="bg-white w-[400px] rounded-xl shadow-lg p-6 relative">
+
+      {/* Close Button */}
+      <button
+        onClick={() => setIsShareOpen(false)}
+        className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+      >
+        ✕
+      </button>
+
+      {/* Title */}
+      <h2 className="text-lg font-semibold mb-4">Share Document</h2>
+
+      {/* Email Input */}
+      <input
+        type="email"
+        value={shareEmail}
+        onChange={(e) => setShareEmail(e.target.value)}
+        placeholder="Enter email"
+        className="w-full border px-3 py-2 rounded-lg text-sm outline-none mb-3"
+      />
+
+      {/* Role Select */}
+      <select
+        value={shareRole}
+        onChange={(e) => setShareRole(e.target.value)}
+        className="w-full border px-3 py-2 rounded-lg text-sm outline-none mb-4"
+      >
+        <option value="viewer">Viewer</option>
+        <option value="editor">Editor</option>
+      </select>
+
+      {/* Buttons */}
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setIsShareOpen(false)}
+          className="px-4 py-2 rounded-lg text-sm bg-gray-100 hover:bg-gray-200"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleShare}
+          className="px-4 py-2 rounded-lg text-sm bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Share
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
