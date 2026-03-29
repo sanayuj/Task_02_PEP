@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { FileText } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../Services/Api";
+import { toast } from "react-toastify";
 
 function Login() {
+  const navigate=useNavigate()
      const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -17,17 +20,32 @@ function Login() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
       return setError("Please fill all fields");
     }
 
-    setError("");
-    console.log("Login Data:", formData);
+try{
+console.log("Login Data:", formData);
+const data =await login(formData)
+console.log(data,"$$$$$");
 
-    // 👉 Call your backend login API here
+if(data.data.success){
+  toast.success("Login successfully ✅")
+  navigate("/")
+
+}else{
+  toast.error(data.data.message)
+}
+
+}catch(Error){
+  console.log(Error);
+  
+}
+    
+
   };
 
   return (

@@ -1,6 +1,8 @@
 import React from "react";
 import { useState } from "react";
 import { useNavigate,Link } from "react-router-dom";
+import { signup } from "../Services/Api";
+import { toast } from "react-toastify";
 
 function Signup() {
   const navigate = useNavigate();
@@ -17,15 +19,33 @@ function Signup() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
 
     if (form.password !== form.confirmPassword) {
       return setError("Passwords do not match");
     }
 
-    setError("");
+   try {
     console.log("Signup Data:", form);
+
+    const data = await signup(form);
+
+    console.log(data, "Data");
+
+    if (data.data.success) {
+      toast.success("Signup successful ✅");
+      navigate("/login");
+    } else {
+      toast.error(data.message || "Unable to signup");
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong");
+  }
+
+   
+
   };
   return (
     <div>

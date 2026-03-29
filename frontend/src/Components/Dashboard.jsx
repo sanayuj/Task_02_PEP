@@ -1,41 +1,61 @@
-import React from 'react'
+import React, { useEffect, useState } from "react";
 import { Plus, Search, FileText, Trash2, LogOut } from "lucide-react";
-const documents = [
-  {
-    _id: "1",
-    title: "Project Proposal",
-    updatedAt: "2 hours ago",
-  },
-  {
-    _id: "2",
-    title: "Meeting Notes",
-    updatedAt: "1 day ago",
-  },
-  {
-    _id: "3",
-    title: "MERN Assignment",
-    updatedAt: "3 days ago",
-  },
-];
+import { useNavigate } from "react-router-dom";
+import { createDocument, deleteDocumentById, getAllRecentDoc } from "../Services/Api";
+import { toast } from "react-toastify";
 
 function Dashboard() {
-    const handleCreateDoc = () => {
-    console.log("Create new document");
+  const navigate = useNavigate();
+  const [documents, setDocuments] = useState([]);
+
+  const handleCreateDoc = async () => {
+    try {
+      console.log("Create new document");
+      const data = await createDocument();
+      console.log(data, "CREATE DOC");
+      navigate(`/editor/${data.data.document._id}`);
+    } catch (error) {
+      console.log("Create Doc Error:", error);
+    }
   };
 
   const handleOpenDoc = (id) => {
     console.log("Open document:", id);
+    navigate(`/editor/${id}`);
   };
 
-  const handleDeleteDoc = (id) => {
+  const handleDeleteDoc = async(id) => {
+   try {
+    await deleteDocumentById(id);
     console.log("Delete document:", id);
+
+    setDocuments((prevDocs) => prevDocs.filter((doc) => doc._id !== id));
+    toast.success("Deleted Successfully")
+  } catch (error) {
+    console.log("Delete Doc Error:", error);
+  }
   };
 
   const handleLogout = () => {
     console.log("Logout");
   };
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const res = await getAllRecentDoc();
+        console.log(res.data);
+        setDocuments(res.data.data); 
+      } catch (error) {
+        console.log("Fetch Docs Error:", error);
+      }
+    };
+
+    fetchDocuments();
+  }, []);
+
   return (
-    <div> <div className="min-h-screen bg-[#f8f9fa]">
+    <div className="min-h-screen bg-[#f8f9fa]">
       {/* Navbar */}
       <header className="w-full bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         {/* Left */}
@@ -105,50 +125,56 @@ function Dashboard() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {documents.map((doc) => (
-              <div
-                key={doc._id}
-                className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition p-5 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <FileText size={22} className="text-blue-500" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-semibold text-gray-800">
-                        {doc.title}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        Edited {doc.updatedAt}
-                      </p>
+          {documents.length === 0 ? (
+            <div className="text-center text-gray-500 py-10">
+              No documents found
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {documents.map((doc) => (
+                <div
+                  key={doc._id}
+                  className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition p-5 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="bg-blue-50 p-3 rounded-lg">
+                        <FileText size={22} className="text-blue-500" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-semibold text-gray-800">
+                          {doc.title || "Untitled Document"}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          Edited {new Date(doc.updatedAt).toLocaleString()}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between mt-4">
-                  <button
-                    onClick={() => handleOpenDoc(doc._id)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
-                  >
-                    Open
-                  </button>
+                  <div className="flex items-center justify-between mt-4">
+                    <button
+                      onClick={() => handleOpenDoc(doc._id)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
+                    >
+                      Open
+                    </button>
 
-                  <button
-                    onClick={() => handleDeleteDoc(doc._id)}
-                    className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                    <button
+                      onClick={() => handleDeleteDoc(doc._id)}
+                      className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
       </main>
-    </div></div>
-  )
+    </div>
+  );
 }
 
-export default Dashboard
+export default Dashboard;
