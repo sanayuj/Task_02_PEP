@@ -7,10 +7,17 @@ const logger = require('morgan');
 const session = require("express-session");
 const dbConfig=require("./config/DBConfig")
 const routes=require("./routes/routes")
-
+const http = require("http");
+const server = http.createServer(app);
 
 //DB Config
 dbConfig()
+
+
+const { initSocket } = require("./socket");
+
+
+initSocket(server);
 
 app.use(cookieParser());
 app.use(logger('dev'));
@@ -31,4 +38,4 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/", routes);
 
 
-app.listen(4000,()=>{console.log("Server is Started in 4000 port")})
+server.listen(4000,()=>{console.log("Server is Started in 4000 port")})
