@@ -31,3 +31,11 @@ export const deleteDocumentById=(id)=>{
 export const shareDocument = (id, data) => {
   return userInstance.post(`/sharedoc/${id}`, data);
 };
+
+export const loginCheck=()=>{
+  return userInstance.get("/me")
+}
+
+export const logout=()=>{
+  return userInstance.post("/logout")
+}

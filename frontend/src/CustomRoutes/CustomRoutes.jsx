@@ -11,6 +11,7 @@ function CustomRoutes() {
     <Routes>
             <Route path="/signup" element={<SignupPage />} />
             <Route path='/login' element={<LoginPage/>}/>
+            
             <Route path='/' element={<DashboardPage/>}/>
             <Route path='/editor/:id' element={<EditorPage/>}/>
            
